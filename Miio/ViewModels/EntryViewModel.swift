@@ -99,23 +99,12 @@ class EntryViewModel: ObservableObject {
         
         let photos = savePhotos()
         
-        // Gera resumo se não existir
-        var entrySummary: String? = nil
-        if !content.isEmpty && content.count > 100 {
-            Task {
-                entrySummary = await foundationService.summarizeEntry(content)
-            }
-        }
-        
         if var entry = currentEntry {
             entry.title = title
             entry.content = content
             entry.tags = tagArray
             entry.location = currentLocation
             entry.photos = photos
-            if let summary = entrySummary {
-                entry.summary = summary
-            }
             store.updateEntry(entry)
         } else {
             let newEntry = Entry(
@@ -123,8 +112,7 @@ class EntryViewModel: ObservableObject {
                 content: content,
                 location: currentLocation,
                 photos: photos,
-                tags: tagArray,
-                summary: entrySummary
+                tags: tagArray
             )
             store.addEntry(newEntry)
         }
