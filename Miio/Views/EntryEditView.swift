@@ -160,7 +160,7 @@ struct EntryEditView: View {
                         .font(DesignSystem.Typography.caption())
                 }
                 
-                // Foundation Models - Funcionalidades IA
+                // Inteligência Artificial
                 if !viewModel.content.isEmpty {
                     Section {
                         Button {
@@ -203,32 +203,8 @@ struct EntryEditView: View {
                             }
                         }
                         .disabled(viewModel.isProcessingAI)
-                        
-                        Button {
-                            Task {
-                                let sentiment = await viewModel.classifySentiment()
-                                // Adiciona como tag
-                                if !viewModel.tags.contains(sentiment) {
-                                    viewModel.tags = (viewModel.tags.isEmpty ? "" : viewModel.tags + ", ") + sentiment
-                                }
-                            }
-                        } label: {
-                            HStack {
-                                if viewModel.isProcessingAI {
-                                    ProgressView()
-                                        .scaleEffect(0.8)
-                                } else {
-                                    Image(systemName: "face.smiling")
-                                }
-                                Text("Analisar Sentimento")
-                            }
-                        }
-                        .disabled(viewModel.isProcessingAI)
                     } header: {
                         Text("Inteligência Artificial")
-                    } footer: {
-                        Text("Use IA para melhorar sua entrada")
-                            .font(DesignSystem.Typography.caption())
                     }
                 }
             }

@@ -94,27 +94,37 @@ class EntryViewModel: ObservableObject {
         guard !title.isEmpty || !content.isEmpty else { return }
         
         let tagArray = tags.split(separator: ",")
-            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .map { String($0).trimmingCharacters(in: .whitespaces) }
             .filter { !$0.isEmpty }
         
         let photos = savePhotos()
         
+        // Gera resumo se não existir
+        var entrySummary: String? = nil
+        if !content.isEmpty && content.count > 100 {
+            Task {
+                entrySummary = await foundationService.summarizeEntry(content)
+            }
+        }
+        
         if var entry = currentEntry {
-            // Atualiza entrada existente
             entry.title = title
             entry.content = content
             entry.tags = tagArray
             entry.location = currentLocation
             entry.photos = photos
+            if let summary = entrySummary {
+                entry.summary = summary
+            }
             store.updateEntry(entry)
         } else {
-            // Cria nova entrada
             let newEntry = Entry(
                 title: title,
                 content: content,
                 location: currentLocation,
                 photos: photos,
-                tags: tagArray
+                tags: tagArray,
+                summary: entrySummary
             )
             store.addEntry(newEntry)
         }
