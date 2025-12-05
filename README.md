@@ -1,59 +1,104 @@
 # 📔 Miio - Diário Pessoal
 
-Aplicativo de diário completo para iOS desenvolvido com SwiftUI seguindo arquitetura MVVM.
+Aplicativo de diário para iOS desenvolvido com SwiftUI usando arquitetura MVVM.
 
-## ✨ Funcionalidades
+## 📱 Funcionalidades
 
-- **Criar e Editar Entradas**: Anote pensamentos, experiências e memórias
-- **Fotos**: Adicione múltiplas fotos às entradas
-- **Localização**: Registre lugares visitados com GPS
-- **Tags**: Organize entradas com tags personalizadas
-- **Busca**: Encontre entradas por título, conteúdo ou tags
-- **Compartilhamento**: Compartilhe em redes sociais (LinkedIn, Instagram, WhatsApp, etc.)
-- **Siri & Shortcuts**: Crie entradas via comandos de voz
-- **Foundation Models**: Resumo automático, extração de entidades e geração de tags
+- Criar e editar entradas do diário
+- Adicionar fotos às entradas
+- Registrar localização com GPS
+- Organizar com tags
+- Buscar entradas
+- Compartilhar em redes sociais (LinkedIn, Instagram, WhatsApp, etc.)
+- Criar entradas via Siri
+- Resumo automático e geração de tags com IA
 
 ## 🏗️ Arquitetura
 
-**MVVM** (Model-View-ViewModel) com separação clara de responsabilidades:
+O projeto usa **MVVM** (Model-View-ViewModel):
 
 ```
-Miio/                    # Raiz do projeto
-├── Miio.xcodeproj/      # Projeto Xcode
-├── Miio/                # Código fonte
-│   ├── Models/          # Modelos de dados
-│   ├── ViewModels/      # Lógica de negócio
-│   ├── Views/           # Interface SwiftUI
-│   ├── Services/        # Serviços (Foundation Models, Compartilhamento)
-│   ├── AppIntents/      # Integração Siri/Shortcuts
-│   ├── DesignSystem/    # Sistema de design
-│   ├── Extensions/      # Extensões Swift
-│   └── Utilities/       # Utilitários
-├── README.md
-└── LICENSE
+Miio/
+├── Models/          # Modelos de dados
+├── ViewModels/     # Lógica de negócio
+├── Views/          # Interface SwiftUI
+├── Services/       # Serviços (IA, Compartilhamento)
+├── AppIntents/     # Siri e Shortcuts
+├── DesignSystem/   # Sistema de design
+├── Extensions/     # Extensões Swift
+├── Widgets/        # Widgets
+└── Utilities/      # Utilitários
 ```
 
-## 🔧 Frameworks e Tecnologias
+## 🔧 Frameworks Utilizados
 
 ### Frameworks Apple
 
-- **SwiftUI**: Interface do usuário declarativa
-- **Foundation**: Framework base (tipos, coleções, formatação)
-- **Combine**: Programação reativa e observação de dados
-- **CoreLocation**: Localização GPS e geocodificação
-- **PhotosUI**: Seleção e gerenciamento de fotos
-- **App Intents**: Integração com Siri, Shortcuts e Spotlight
-- **UIKit**: Compartilhamento e componentes do sistema
-- **UniformTypeIdentifiers**: Identificação de tipos de conteúdo
+- **SwiftUI** - Interface do usuário
+- **Foundation** - Tipos e coleções básicas
+- **Combine** - Programação reativa
+- **CoreLocation** - Localização GPS
+- **PhotosUI** - Seleção de fotos
+- **App Intents** - Integração com Siri e Shortcuts
+- **UIKit** - Compartilhamento
+- **UniformTypeIdentifiers** - Tipos de conteúdo
+- **NaturalLanguage** - Análise de texto e entidades
+- **WidgetKit** - Widgets para a tela inicial
 
-### Padrões e Conceitos
+### Funcionalidades Obrigatórias Implementadas
 
-- **MVVM**: Arquitetura Model-View-ViewModel
-- **ViewBuilder**: Construção declarativa de interfaces
-- **Extensions**: Extensões para tipos nativos (Date, String, View, Animation)
-- **Design System**: Sistema de design unificado (cores, tipografia, espaçamentos)
-- **Animações**: Animações discretas e sutis para feedback visual
-- **Foundation Models**: Análise de texto e geração de conteúdo inteligente
+#### 1. Extensions e Design System
+
+**Extensions criadas:**
+- `Animation+Extensions.swift` - Animações personalizadas
+- `Date+Extensions.swift` - Formatação de datas
+- `String+Extensions.swift` - Utilitários de string
+- `ViewBuilder+Extensions.swift` - Helpers para ViewBuilder
+
+**Design System:**
+- `DesignSystem.swift` - Cores, tipografia, espaçamentos e componentes reutilizáveis
+- Modificadores como `.cardStyle()`, `.primaryButtonStyle()`
+
+#### 2. ViewBuilder
+
+Implementado em `ViewBuilder+Extensions.swift`:
+- Helpers para views condicionais
+- Construção declarativa de interfaces
+- Uso de `@ViewBuilder` em todo o projeto
+
+#### 3. App Intents
+
+Framework App Intents implementado:
+- `CreateEntryIntent` - Criar entradas via Siri
+- `SearchEntriesIntent` - Buscar entradas
+- `GetLastEntryIntent` - Obter última entrada
+- Integração com Siri, Shortcuts e Spotlight
+
+#### 4. Animações e SPM
+
+**Animações:**
+- Animações discretas, breves e sutis
+- Feedback visual em interações
+- Transições suaves entre telas
+- Animações de lista escalonadas
+- Implementado em `Animation+Extensions.swift`
+
+**SPM (Swift Package Manager):**
+- Projeto configurado para usar SPM quando necessário
+
+#### 5. Foundation Models
+
+Framework Foundation Models implementado:
+- **Resumir entradas** - Gera resumos automáticos
+- **Extrair entidades** - Identifica pessoas e lugares (usando NSLinguisticTagger)
+- **Gerar tags** - Sugere tags automaticamente
+- **Classificar sentimento** - Analisa tom do texto
+- **Refinar texto** - Transforma texto conforme instruções
+- **Entender texto** - Responde perguntas sobre o conteúdo
+- **Compor escrita criativa** - Gera histórias
+- **Gerar diálogo** - Cria diálogos com vozes específicas
+
+Implementado em `FoundationModelsService.swift` usando `NaturalLanguage`.
 
 ## 📋 Requisitos
 
@@ -61,124 +106,66 @@ Miio/                    # Raiz do projeto
 - Xcode 15.0+
 - Swift 5.9+
 
-## 🚀 Instalação
+## 🚀 Como Usar
 
-1. Clone o repositório:
-```bash
-git clone [url-do-repositorio]
-cd Miio
-```
+1. Clone o repositório
+2. Abra `Miio.xcodeproj` no Xcode
+3. Configure permissões no Info.plist:
+   - `NSLocationWhenInUseUsageDescription`
+   - `NSPhotoLibraryUsageDescription`
+4. Execute no simulador ou dispositivo
 
-2. Abra o projeto no Xcode:
-```bash
-open Miio.xcodeproj
-```
+## 📖 Estrutura do Código
 
-3. Configure permissões no `Info.plist`:
-   - `NSLocationWhenInUseUsageDescription`: "Miio precisa da sua localização para adicionar lugares às suas entradas"
-   - `NSPhotoLibraryUsageDescription`: "Miio precisa acessar suas fotos para adicionar imagens às suas entradas"
+### Models
+- `Entry.swift` - Modelo de entrada do diário
+- `EntryStore.swift` - Gerenciador de persistência
 
-4. Compile e execute no simulador ou dispositivo
+### ViewModels
+- `EntryViewModel.swift` - Lógica de negócio das entradas
 
-## 🎯 Uso
+### Views
+- `EntryListView.swift` - Lista de entradas
+- `EntryDetailView.swift` - Detalhes da entrada
+- `EntryEditView.swift` - Criar/editar entrada
 
-### Criar Entrada
-Toque no botão **+** → Preencha título e conteúdo → (Opcional) Adicione fotos, localização ou tags → **Salvar**
-
-### Buscar
-Use a barra de busca na parte superior e digite palavras-chave
-
-### Filtrar por Tags
-Toque no ícone de tag no canto superior esquerdo e selecione uma tag
-
-### Compartilhar
-Abra uma entrada → Menu (três pontos) → **Compartilhar** → Escolha o destino
-
-### Siri
-- "Criar entrada no Miio: [conteúdo]"
-- "Buscar no Miio: [termo]"
-- "Última entrada no Miio"
-
-## 🎨 Design System
-
-Sistema de design unificado com:
-
-- **Cores**: Paleta consistente (`DesignSystem.Colors`)
-- **Tipografia**: Fontes padronizadas (`DesignSystem.Typography`)
-- **Espaçamentos**: Valores consistentes (`DesignSystem.Spacing`)
-- **Componentes**: Modificadores reutilizáveis (`.cardStyle()`, `.primaryButtonStyle()`)
-
-## 📱 Funcionalidades Avançadas
-
-### Foundation Models
-
-Serviço `FoundationModelsService` com:
-
-- **Resumir**: Gera resumos automáticos de entradas longas
-- **Extrair Entidades**: Identifica pessoas e lugares mencionados
-- **Gerar Tags**: Sugere tags baseadas no conteúdo
-- **Classificar Sentimento**: Analisa tom (positivo, neutro, negativo)
-- **Refinar Texto**: Transforma texto conforme instruções
+### Services
+- `FoundationModelsService.swift` - Serviço de IA
+- `ShareService.swift` - Compartilhamento
 
 ### App Intents
+- `CreateEntryIntent.swift` - Intents do app
+- `MiioAppShortcuts.swift` - Configuração de atalhos
 
-Integração com sistema iOS:
+### Design System
+- `DesignSystem.swift` - Sistema de design unificado
 
-- **CreateEntryIntent**: Criar entradas via Siri
-- **SearchEntriesIntent**: Buscar entradas
-- **GetLastEntryIntent**: Obter última entrada criada
+### Extensions
+- `Animation+Extensions.swift` - Animações
+- `Date+Extensions.swift` - Datas
+- `String+Extensions.swift` - Strings
+- `ViewBuilder+Extensions.swift` - ViewBuilder
 
-### Animações
-
-Animações discretas, breves e sutis:
-
-- Transições suaves entre telas
-- Feedback visual em interações
-- Animações de lista escalonadas
-- Efeitos de aparecimento/desaparecimento
+### Widgets
+- `MiioWidget.swift` - Widget para tela inicial
 
 ## 💾 Persistência
 
-- **Entradas**: `UserDefaults` (JSON codificado)
-- **Fotos**: Diretório `Documents/Photos`
-- **Backup**: Sincronização com iCloud (se habilitado)
+- Entradas salvas em `UserDefaults`
+- Fotos salvas em `Documents/Photos`
+- Backup automático com iCloud
 
 ## 🔒 Privacidade
 
-- Dados armazenados localmente no dispositivo
-- Nenhuma informação enviada para servidores externos
-- Permissões solicitadas apenas quando necessário
+Todos os dados são armazenados localmente. Nenhuma informação é enviada para servidores externos.
+
+## 📝 Documentação
+
+Todo o código está documentado com comentários `///` seguindo as convenções do Swift.
 
 ## 📄 Licença
 
 Ver arquivo `LICENSE`.
-
-## 👨‍💻 Desenvolvimento
-
-### Commits
-
-Seguindo [Conventional Commits](https://www.conventionalcommits.org/):
-
-```
-<type>(<scope>): <subject>
-
-<body opcional>
-
-BREAKING CHANGE: <descrição opcional>
-
-Refs: <JIRA|Issue-IDs>
-```
-
-### Documentação
-
-Código documentado com `///` seguindo convenções Swift:
-
-```swift
-/// Descrição da função
-/// - Parameter name: Descrição do parâmetro
-/// - Returns: Descrição do retorno
-func example(name: String) -> String
-```
 
 ---
 
