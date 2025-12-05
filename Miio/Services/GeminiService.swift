@@ -15,7 +15,7 @@ class GeminiService {
     
     /// URL base da API
     private var baseURL: String {
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=\(apiKey)"
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=\(apiKey)"
     }
     
     /// Gera tags usando a API do Gemini
@@ -49,7 +49,12 @@ class GeminiService {
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
             request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
             
-            let (data, _) = try await URLSession.shared.data(for: request)
+            let (data, response) = try await URLSession.shared.data(for: request)
+            
+            guard let httpResponse = response as? HTTPURLResponse,
+                  httpResponse.statusCode == 200 else {
+                return []
+            }
             
             if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
                let candidates = json["candidates"] as? [[String: Any]],
@@ -62,13 +67,13 @@ class GeminiService {
                 // Extrai tags do texto retornado
                 let tags = text.components(separatedBy: ",")
                     .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
-                    .filter { !$0.isEmpty }
+                    .filter { !$0.isEmpty && $0.count > 2 }
                     .map { $0.lowercased() }
                 
                 return Array(tags.prefix(3))
             }
         } catch {
-            print("Erro ao chamar API do Gemini: \(error)")
+            print("Erro ao chamar API do Gemini: \(error.localizedDescription)")
         }
         
         return []

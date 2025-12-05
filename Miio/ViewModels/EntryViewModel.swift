@@ -131,13 +131,34 @@ class EntryViewModel: ObservableObject {
         isLoadingLocation = true
         locationManager.requestLocation { [weak self] location in
             Task { @MainActor in
-                self?.isLoadingLocation = false
+                guard let self = self else { return }
+                self.isLoadingLocation = false
+                
                 if let location = location {
-                    self?.currentLocation = Location(
-                        coordinate: location.coordinate,
-                        name: "Localização atual",
-                        address: nil
-                    )
+                    // Faz geocodificação reversa para obter o nome do lugar
+                    let geocoder = CLGeocoder()
+                    geocoder.reverseGeocodeLocation(location) { placemarks, error in
+                        Task { @MainActor in
+                            if let placemark = placemarks?.first {
+                                let name = placemark.name ?? placemark.locality ?? "Localização atual"
+                                let address = [placemark.thoroughfare, placemark.locality, placemark.country]
+                                    .compactMap { $0 }
+                                    .joined(separator: ", ")
+                                
+                                self.currentLocation = Location(
+                                    coordinate: location.coordinate,
+                                    name: name,
+                                    address: address.isEmpty ? nil : address
+                                )
+                            } else {
+                                self.currentLocation = Location(
+                                    coordinate: location.coordinate,
+                                    name: "Localização atual",
+                                    address: nil
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }

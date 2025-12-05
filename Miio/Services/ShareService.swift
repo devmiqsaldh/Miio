@@ -20,14 +20,15 @@ class ShareService {
         var items: [Any] = []
         
         // Texto da entrada
-        var shareText = "📔 \(entry.title)\n\n\(entry.content)"
+        var shareText = entry.title.isEmpty ? "Entrada do Diário" : entry.title
+        shareText += "\n\n\(entry.content)"
         
         if let location = entry.location {
-            shareText += "\n\n📍 \(location.name)"
+            shareText += "\n\nLocalização: \(location.name)"
         }
         
         if !entry.tags.isEmpty {
-            shareText += "\n\n🏷️ \(entry.tags.joined(separator: ", "))"
+            shareText += "\n\nTags: \(entry.tags.joined(separator: ", "))"
         }
         
         items.append(shareText)

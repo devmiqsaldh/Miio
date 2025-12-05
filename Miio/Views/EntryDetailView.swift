@@ -121,9 +121,7 @@ struct EntryDetailView: View {
                 EntryEditView(viewModel: viewModel)
             }
             .sheet(isPresented: $showingShareSheet) {
-                if !shareItems.isEmpty {
-                    ShareSheet(activityItems: shareItems)
-                }
+                ShareSheet(activityItems: shareItems)
             }
             .onAppear {
                 loadImages()
@@ -145,22 +143,18 @@ struct EntryDetailView: View {
     }
     
     private func prepareShareItems() {
-        var items: [Any] = []
-        
-        var shareText = "📔 \(entry.title)\n\n\(entry.content)"
+        var shareText = entry.title.isEmpty ? "Entrada do Diário" : entry.title
+        shareText += "\n\n\(entry.content)"
         
         if let location = entry.location {
-            shareText += "\n\n📍 \(location.name)"
+            shareText += "\n\nLocalização: \(location.name)"
         }
         
         if !entry.tags.isEmpty {
-            shareText += "\n\n🏷️ \(entry.tags.joined(separator: ", "))"
+            shareText += "\n\nTags: \(entry.tags.joined(separator: ", "))"
         }
         
-        items.append(shareText)
-        items.append(contentsOf: entryImages)
-        
-        shareItems = items
+        shareItems = [shareText] + entryImages
     }
 }
 

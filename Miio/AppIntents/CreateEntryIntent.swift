@@ -27,8 +27,7 @@ struct CreateEntryIntent: AppIntent {
     /// Executa a intent
     /// - Returns: Resultado da execução
     func perform() async throws -> some IntentResult {
-        // Garante que a mutação do store ocorra no MainActor
-        try await MainActor.run {
+        await MainActor.run {
             let store = EntryStore()
             let entry = Entry(title: title, content: content)
             store.addEntry(entry)

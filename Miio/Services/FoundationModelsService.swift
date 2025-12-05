@@ -63,9 +63,6 @@ class FoundationModelsService {
     /// - Parameter content: Conteúdo a ser analisado
     /// - Returns: Array de tags sugeridas
     func generateTags(from content: String) async -> [String] {
-        // Em produção, usaria análise semântica avançada
-        // Por enquanto, retorna palavras-chave baseadas em frequência
-        
         let words = content.lowercased()
             .components(separatedBy: .whitespacesAndNewlines)
             .map { $0.trimmingCharacters(in: .punctuationCharacters) }
@@ -82,7 +79,6 @@ class FoundationModelsService {
     /// - Parameter content: Conteúdo a ser analisado
     /// - Returns: Sentimento detectado (positivo, neutro, negativo)
     func classifySentiment(_ content: String) async -> String {
-        // Em produção, usaria análise de sentimento avançada
         let positiveWords = ["feliz", "ótimo", "bom", "amor", "alegria", "sucesso"]
         let negativeWords = ["triste", "ruim", "problema", "difícil", "frustrado"]
         
@@ -102,12 +98,9 @@ class FoundationModelsService {
     /// Refina ou edita um texto
     /// - Parameters:
     ///   - content: Conteúdo original
-    ///   - instruction: Instrução de como modificar (ex: "segunda pessoa")
+    ///   - instruction: Instrução de como modificar
     /// - Returns: Texto refinado
     func refineText(_ content: String, instruction: String) async -> String {
-        // Em produção, usaria Foundation Models para transformações complexas
-        // Por enquanto, aplica transformações básicas baseadas na instrução
-        
         let lowerInstruction = instruction.lowercased()
         
         if lowerInstruction.contains("segunda pessoa") {
