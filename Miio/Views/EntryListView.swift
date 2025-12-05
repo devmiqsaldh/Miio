@@ -80,18 +80,38 @@ struct EntryListView: View {
     // MARK: - Subviews
     
     private var entriesList: some View {
-        ScrollView {
-            LazyVStack(spacing: DesignSystem.Spacing.md) {
-                ForEach(Array(viewModel.filteredEntries.enumerated()), id: \.element.id) { index, entry in
-                    EntryCard(entry: entry) {
-                        selectedEntry = entry
+        List {
+            ForEach(viewModel.filteredEntries.filter { !$0.tags.contains("arquivado") }) { entry in
+                EntryCard(entry: entry) {
+                    selectedEntry = entry
+                }
+                .listRowSeparator(.hidden)
+                .listRowInsets(EdgeInsets(top: DesignSystem.Spacing.xs, leading: DesignSystem.Spacing.md, bottom: DesignSystem.Spacing.xs, trailing: DesignSystem.Spacing.md))
+                .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                    Button(role: .destructive) {
+                        withAnimation {
+                            viewModel.deleteEntry(entry)
+                        }
+                    } label: {
+                        Label("Excluir", systemImage: "trash")
                     }
-                    .animateOnChange(of: entry.id)
-                    .listAnimation(delay: Double(index) * 0.05)
+                    
+                    Button {
+                        // Arquivar entrada (marcar como arquivada)
+                        var archivedEntry = entry
+                        if !archivedEntry.tags.contains("arquivado") {
+                            archivedEntry.tags.append("arquivado")
+                            viewModel.store.updateEntry(archivedEntry)
+                        }
+                    } label: {
+                        Label("Arquivar", systemImage: "archivebox")
+                    }
+                    .tint(.blue)
                 }
             }
-            .padding(DesignSystem.Spacing.md)
         }
+        .listStyle(.plain)
+        .scrollContentBackground(.hidden)
     }
     
     private var emptyStateView: some View {

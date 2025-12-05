@@ -55,6 +55,9 @@ class EntryViewModel: ObservableObject {
     /// Serviço de Foundation Models
     private let foundationService = FoundationModelsService()
     
+    /// Serviço do Gemini
+    private let geminiService = GeminiService()
+    
     /// Gerenciador de localização
     private let locationManager = LocationManager()
     
@@ -179,15 +182,21 @@ class EntryViewModel: ObservableObject {
         }
     }
     
-    /// Gera tags automaticamente a partir do conteúdo
+    /// Gera tags automaticamente a partir do conteúdo usando Gemini
     func generateTagsAutomatically() async {
         guard !content.isEmpty else { return }
         isProcessingAI = true
         defer { isProcessingAI = false }
         
-        let generatedTags = await foundationService.generateTags(from: content)
+        // Tenta usar Gemini primeiro
+        var generatedTags = await geminiService.generateTags(from: content)
+        
+        // Se Gemini não retornar, usa Foundation Models como fallback
+        if generatedTags.isEmpty {
+            generatedTags = await foundationService.generateTags(from: content)
+        }
+        
         if !generatedTags.isEmpty {
-            // Corrigido: converte Substring para String e aplica trimmingCharacters
             let existingTags = tags.isEmpty
                 ? []
                 : tags.split(separator: ",")

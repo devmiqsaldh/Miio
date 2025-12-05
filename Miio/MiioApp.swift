@@ -13,9 +13,23 @@ struct MiioApp: App {
     /// Store global de entradas
     @StateObject private var store = EntryStore()
     
+    /// Indica se deve mostrar a splash screen
+    @State private var showSplash = true
+    
     var body: some Scene {
         WindowGroup {
-            EntryListView(store: store)
+            if showSplash {
+                SplashView()
+                    .onAppear {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                            withAnimation {
+                                showSplash = false
+                            }
+                        }
+                    }
+            } else {
+                EntryListView(store: store)
+            }
         }
     }
 }

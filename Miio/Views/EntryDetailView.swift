@@ -121,7 +121,9 @@ struct EntryDetailView: View {
                 EntryEditView(viewModel: viewModel)
             }
             .sheet(isPresented: $showingShareSheet) {
-                ShareSheet(activityItems: shareItems)
+                if !shareItems.isEmpty {
+                    ShareSheet(activityItems: shareItems)
+                }
             }
             .onAppear {
                 loadImages()

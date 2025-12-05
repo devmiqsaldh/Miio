@@ -250,6 +250,12 @@ struct EntryEditView: View {
                     focusedField = .title
                 }
             }
+            .onDisappear {
+                // Reseta o formulário ao sair se não foi salvo
+                if viewModel.currentEntry == nil {
+                    viewModel.createNewEntry()
+                }
+            }
         }
     }
     
