@@ -161,7 +161,7 @@ Todos os dados são armazenados localmente. Nenhuma informação é enviada para
 
 ## Documentação
 
-Todo o código está documentado com comentários /// seguindo as convenções do Swift.
+Todo o código está documentado com comentários seguindo as convenções do Swift.
 
 ## Licença
 
