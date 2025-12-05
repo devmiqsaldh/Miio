@@ -28,17 +28,15 @@ extension Animation {
     }
     
     /// Animação para aparecimento de elementos
-    /// - Returns: Animação de fade com spring
+    /// - Returns: Animação de spring suave (o fade é aplicado no modificador de View)
     static var appear: Animation {
         .spring(response: 0.4, dampingFraction: 0.75)
-        .combined(with: .opacity)
     }
     
     /// Animação para desaparecimento de elementos
-    /// - Returns: Animação de fade rápida
+    /// - Returns: Animação easeOut rápida (o fade é aplicado no modificador de View)
     static var disappear: Animation {
         .easeOut(duration: 0.15)
-        .combined(with: .opacity)
     }
 }
 
@@ -58,7 +56,7 @@ extension View {
     
     /// Aplica animação de aparecimento
     /// - Parameter isVisible: Se a view está visível
-    /// - Returns: View com animação de aparecimento
+    /// - Returns: View com animação de aparecimento (fade + scale)
     func animateAppearance(_ isVisible: Bool) -> some View {
         self
             .opacity(isVisible ? 1 : 0)
@@ -101,4 +99,3 @@ extension View {
         modifier(ListAnimationModifier(delay: delay))
     }
 }
-

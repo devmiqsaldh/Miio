@@ -7,6 +7,7 @@
 
 import AppIntents
 import Foundation
+import SwiftUI
 
 /// Intent para criar uma nova entrada do diário via Siri ou Shortcuts
 struct CreateEntryIntent: AppIntent {
@@ -26,15 +27,13 @@ struct CreateEntryIntent: AppIntent {
     /// Executa a intent
     /// - Returns: Resultado da execução
     func perform() async throws -> some IntentResult {
-        return await MainActor.run {
+        // Garante que a mutação do store ocorra no MainActor
+        try await MainActor.run {
             let store = EntryStore()
-            let entry = Entry(
-                title: title,
-                content: content
-            )
+            let entry = Entry(title: title, content: content)
             store.addEntry(entry)
-            return .result()
         }
+        return .result()
     }
 }
 
@@ -47,15 +46,15 @@ struct SearchEntriesIntent: AppIntent {
     var searchText: String
     
     func perform() async throws -> some IntentResult & ShowsSnippetView {
-        return await MainActor.run {
+        let results: [Entry] = await MainActor.run {
             let store = EntryStore()
-            let results = store.searchEntries(searchText)
-            
-            return .result(
-                value: results.map { $0.title },
-                view: SearchResultsView(entries: results)
-            )
+            return store.searchEntries(searchText)
         }
+        // Retorna uma lista de títulos e um snippet SwiftUI
+        return .result(
+            value: results.map { $0.title },
+            view: SearchResultsView(entries: results)
+        )
     }
 }
 
@@ -82,15 +81,16 @@ struct GetLastEntryIntent: AppIntent {
     static var description = IntentDescription("Retorna a última entrada criada no diário")
     
     func perform() async throws -> some IntentResult & ProvidesDialog {
-        return await MainActor.run {
+        let dialogString: String = await MainActor.run {
             let store = EntryStore()
-            guard let lastEntry = store.entries.first else {
-                return .result(dialog: "Você ainda não tem entradas no diário")
+            if let lastEntry = store.entries.first {
+                let dateString = lastEntry.createdAt.formattedForDiary()
+                return "Sua última entrada é '\(lastEntry.title)', criada em \(dateString)"
+            } else {
+                return "Você ainda não tem entradas no diário"
             }
-            
-            let dateString = lastEntry.createdAt.formattedForDiary()
-            return .result(dialog: "Sua última entrada é '\(lastEntry.title)', criada em \(dateString)")
         }
+        let dialog = IntentDialog(stringLiteral: dialogString)
+        return .result(dialog: dialog)
     }
 }
-

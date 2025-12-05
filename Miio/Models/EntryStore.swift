@@ -86,7 +86,7 @@ class EntryStore: ObservableObject {
     /// Busca entradas por termo
     /// - Parameter searchText: Texto de busca
     /// - Returns: Array de entradas filtradas
-    nonisolated func searchEntries(_ searchText: String) -> [Entry] {
+    func searchEntries(_ searchText: String) -> [Entry] {
         guard !searchText.isEmpty else { return entries }
         let lowercased = searchText.lowercased()
         return entries.filter { entry in
@@ -103,4 +103,3 @@ class EntryStore: ObservableObject {
         entries.filter { $0.tags.contains(tag) }
     }
 }
-

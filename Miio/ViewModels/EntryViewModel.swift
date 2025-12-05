@@ -10,6 +10,8 @@ import SwiftUI
 import CoreLocation
 import PhotosUI
 import UniformTypeIdentifiers
+import Combine
+import UIKit
 
 /// ViewModel responsável pela lógica de negócio das entradas do diário
 @MainActor
@@ -46,6 +48,12 @@ class EntryViewModel: ObservableObject {
     
     /// Indica se está carregando localização
     @Published var isLoadingLocation: Bool = false
+    
+    /// Indica se está processando Foundation Models
+    @Published var isProcessingAI: Bool = false
+    
+    /// Serviço de Foundation Models
+    private let foundationService = FoundationModelsService()
     
     /// Gerenciador de localização
     private let locationManager = LocationManager()
@@ -154,13 +162,72 @@ class EntryViewModel: ObservableObject {
         Array(Set(store.entries.flatMap { $0.tags })).sorted()
     }
     
+    // MARK: - Foundation Models Methods
+    
+    /// Gera resumo da entrada atual
+    func generateSummary() async {
+        guard !content.isEmpty else { return }
+        isProcessingAI = true
+        defer { isProcessingAI = false }
+        
+        if let summary = await foundationService.summarizeEntry(content) {
+            // Atualiza a entrada atual com o resumo
+            if var entry = currentEntry {
+                entry.summary = summary
+                store.updateEntry(entry)
+            }
+        }
+    }
+    
+    /// Gera tags automaticamente a partir do conteúdo
+    func generateTagsAutomatically() async {
+        guard !content.isEmpty else { return }
+        isProcessingAI = true
+        defer { isProcessingAI = false }
+        
+        let generatedTags = await foundationService.generateTags(from: content)
+        if !generatedTags.isEmpty {
+            let existingTags = tags.isEmpty ? [] : tags.split(separator: ",").map { $0.trimmed() }
+            let allTags = Array(Set(existingTags + generatedTags))
+            tags = allTags.joined(separator: ", ")
+        }
+    }
+    
+    /// Extrai entidades do conteúdo
+    func extractEntities() async -> [String] {
+        guard !content.isEmpty else { return [] }
+        isProcessingAI = true
+        defer { isProcessingAI = false }
+        
+        return await foundationService.extractEntities(from: content)
+    }
+    
+    /// Classifica o sentimento do conteúdo
+    func classifySentiment() async -> String {
+        guard !content.isEmpty else { return "neutro" }
+        isProcessingAI = true
+        defer { isProcessingAI = false }
+        
+        return await foundationService.classifySentiment(content)
+    }
+    
+    /// Refina o texto com uma instrução
+    /// - Parameter instruction: Instrução de como refinar
+    func refineText(instruction: String) async {
+        guard !content.isEmpty else { return }
+        isProcessingAI = true
+        defer { isProcessingAI = false }
+        
+        content = await foundationService.refineText(content, instruction: instruction)
+    }
+    
     // MARK: - Private Methods
     
     /// Salva as fotos selecionadas e retorna array de Photo
     private func savePhotos() -> [Photo] {
         var savedPhotos: [Photo] = []
         
-        for (index, image) in selectedPhotos.enumerated() {
+        for (_, image) in selectedPhotos.enumerated() {
             guard let imageData = image.jpegData(compressionQuality: 0.8) else { continue }
             
             let fileName = "\(UUID().uuidString).jpg"
@@ -228,7 +295,7 @@ class LocationManager: NSObject, CLLocationManagerDelegate {
     }
     
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
-        if manager.authorizationStatus == .authorizedWhenInUse || 
+        if manager.authorizationStatus == .authorizedWhenInUse ||
            manager.authorizationStatus == .authorizedAlways {
             manager.requestLocation()
         } else {
@@ -237,4 +304,3 @@ class LocationManager: NSObject, CLLocationManagerDelegate {
         }
     }
 }
-

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import WidgetKit
 
 /// Ponto de entrada principal do aplicativo Miio
 @main
@@ -17,5 +18,13 @@ struct MiioApp: App {
         WindowGroup {
             EntryListView(store: store)
         }
+    }
+}
+
+/// Bundle do widget
+@main
+struct MiioWidgetBundle: WidgetBundle {
+    var body: some Widget {
+        MiioWidget()
     }
 }

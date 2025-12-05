@@ -134,11 +134,98 @@ struct EntryEditView: View {
                     TextField("Tags (separadas por vírgula)", text: $viewModel.tags)
                         .focused($focusedField, equals: .tags)
                         .font(DesignSystem.Typography.body())
+                    
+                    if !viewModel.content.isEmpty {
+                        Button {
+                            Task {
+                                await viewModel.generateTagsAutomatically()
+                            }
+                        } label: {
+                            HStack {
+                                if viewModel.isProcessingAI {
+                                    ProgressView()
+                                        .scaleEffect(0.8)
+                                } else {
+                                    Image(systemName: "sparkles")
+                                }
+                                Text("Gerar Tags Automaticamente")
+                            }
+                        }
+                        .disabled(viewModel.isProcessingAI)
+                    }
                 } header: {
                     Text("Tags")
                 } footer: {
-                    Text("Separe múltiplas tags com vírgulas")
+                    Text("Separe múltiplas tags com vírgulas ou use IA para gerar automaticamente")
                         .font(DesignSystem.Typography.caption())
+                }
+                
+                // Foundation Models - Funcionalidades IA
+                if !viewModel.content.isEmpty {
+                    Section {
+                        Button {
+                            Task {
+                                await viewModel.generateSummary()
+                            }
+                        } label: {
+                            HStack {
+                                if viewModel.isProcessingAI {
+                                    ProgressView()
+                                        .scaleEffect(0.8)
+                                } else {
+                                    Image(systemName: "text.bubble")
+                                }
+                                Text("Gerar Resumo")
+                            }
+                        }
+                        .disabled(viewModel.isProcessingAI)
+                        
+                        Button {
+                            Task {
+                                let entities = await viewModel.extractEntities()
+                                if !entities.isEmpty {
+                                    viewModel.tags = (viewModel.tags.isEmpty ? "" : viewModel.tags + ", ") + entities.joined(separator: ", ")
+                                }
+                            }
+                        } label: {
+                            HStack {
+                                if viewModel.isProcessingAI {
+                                    ProgressView()
+                                        .scaleEffect(0.8)
+                                } else {
+                                    Image(systemName: "person.2")
+                                }
+                                Text("Extrair Pessoas e Lugares")
+                            }
+                        }
+                        .disabled(viewModel.isProcessingAI)
+                        
+                        Button {
+                            Task {
+                                let sentiment = await viewModel.classifySentiment()
+                                // Adiciona como tag
+                                if !viewModel.tags.contains(sentiment) {
+                                    viewModel.tags = (viewModel.tags.isEmpty ? "" : viewModel.tags + ", ") + sentiment
+                                }
+                            }
+                        } label: {
+                            HStack {
+                                if viewModel.isProcessingAI {
+                                    ProgressView()
+                                        .scaleEffect(0.8)
+                                } else {
+                                    Image(systemName: "face.smiling")
+                                }
+                                Text("Analisar Sentimento")
+                            }
+                        }
+                        .disabled(viewModel.isProcessingAI)
+                    } header: {
+                        Text("Inteligência Artificial")
+                    } footer: {
+                        Text("Use IA para melhorar sua entrada")
+                            .font(DesignSystem.Typography.caption())
+                    }
                 }
             }
             .navigationTitle(viewModel.currentEntry == nil ? "Nova Entrada" : "Editar Entrada")
