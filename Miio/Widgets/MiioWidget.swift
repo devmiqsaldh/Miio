@@ -5,12 +5,16 @@
 //  Created by Miqueias Saldanha on 04/12/25.
 //
 
+// IMPORTANTE: Widgets precisam de um target separado (Widget Extension) no Xcode
+// Este arquivo está comentado para evitar erros de compilação
+// Para usar widgets:
+// 1. Crie um Widget Extension target no Xcode
+// 2. Mova este arquivo para o target do widget
+// 3. Configure App Groups para compartilhar dados entre app e widget
+
+/*
 import WidgetKit
 import SwiftUI
-
-// Nota: Para usar widgets, é necessário criar um target separado no Xcode
-// Este arquivo serve como referência da implementação
-// Para ativar, crie um Widget Extension no Xcode e mova este arquivo para lá
 
 /// Widget que exibe a última entrada do diário
 struct MiioWidget: Widget {
@@ -76,14 +80,14 @@ struct MiioWidgetEntry: TimelineEntry {
     /// Data da entrada
     let date: Date
     
-    /// Entrada do diário
+    /// Entrada do diário (modelo do app)
     let entry: Entry
 }
 
 /// View do widget
 struct MiioWidgetEntryView: View {
-    /// Entrada do widget
-    var entry: MiioTimelineProvider.Entry
+    /// Entrada do widget (use explicitamente MiioWidgetEntry para evitar colisão de nomes)
+    var entry: MiioWidgetEntry
     
     /// Ambiente do widget
     @Environment(\.widgetFamily) var family
@@ -210,4 +214,4 @@ struct MediumWidgetView: View {
         )
     )
 }
-
+*/

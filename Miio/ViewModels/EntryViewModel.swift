@@ -187,7 +187,12 @@ class EntryViewModel: ObservableObject {
         
         let generatedTags = await foundationService.generateTags(from: content)
         if !generatedTags.isEmpty {
-            let existingTags = tags.isEmpty ? [] : tags.split(separator: ",").map { $0.trimmed() }
+            // Corrigido: converte Substring para String e aplica trimmingCharacters
+            let existingTags = tags.isEmpty
+                ? []
+                : tags.split(separator: ",")
+                    .map { String($0).trimmingCharacters(in: .whitespacesAndNewlines) }
+                    .filter { !$0.isEmpty }
             let allTags = Array(Set(existingTags + generatedTags))
             tags = allTags.joined(separator: ", ")
         }
