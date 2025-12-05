@@ -33,13 +33,12 @@ Miio/
 
 ### Frameworks Apple
 
-- SwiftUI - Interface do usuário
+- SwiftUI - Interface do usuário e compartilhamento
 - Foundation - Tipos e coleções básicas
 - Combine - Programação reativa
 - CoreLocation - Localização GPS
 - PhotosUI - Seleção de fotos
 - App Intents - Integração com Siri e Shortcuts
-- UIKit - Compartilhamento
 - UniformTypeIdentifiers - Tipos de conteúdo
 - NaturalLanguage - Análise de texto e entidades
 
@@ -124,10 +123,19 @@ Implementado em FoundationModelsService.swift usando NaturalLanguage e GeminiSer
 - EntryDetailView.swift - Detalhes da entrada
 - EntryEditView.swift - Criar/editar entrada
 - SplashView.swift - Tela de splash
+- ShareableEntryView.swift - View para compartilhamento de entradas
+
+### Views/Components
+- EntryCard.swift - Card de entrada na lista
+- LocationView.swift - Exibição de localização
+- TagsView.swift - Exibição de tags
+- PhotosGridView.swift - Grade de fotos
+- FlowLayout.swift - Layout customizado para tags
 
 ### Services
-- FoundationModelsService.swift - Serviço de IA
-- GeminiService.swift - Serviço de geração de tags com Gemini
+- FoundationModelsService.swift - Serviço de IA e análise de texto
+- GeminiService.swift - Serviço de geração de tags com Gemini API
+- LocationService.swift - Serviço de localização e geocodificação
 - ShareService.swift - Compartilhamento
 
 ### App Intents
@@ -147,11 +155,10 @@ Implementado em FoundationModelsService.swift usando NaturalLanguage e GeminiSer
 
 - Entradas salvas em UserDefaults
 - Fotos salvas em Documents/Photos
-- Backup automático com iCloud
 
 ## Privacidade
 
-Todos os dados são armazenados localmente. Nenhuma informação é enviada para servidores externos, exceto para geração de tags via Gemini API.
+Todos os dados são armazenados localmente no dispositivo. Apenas a geração de tags utiliza a API do Gemini (Google). Nenhuma outra informação pessoal é enviada para servidores externos.
 
 ## Documentação
 

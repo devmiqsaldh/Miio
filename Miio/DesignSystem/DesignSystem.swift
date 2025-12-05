@@ -12,25 +12,28 @@ enum DesignSystem {
     /// Cores do sistema de design
     enum Colors {
         /// Cor primária do aplicativo (marrom claro)
-        static let primary = Color(red: 0.75, green: 0.60, blue: 0.50)
+        static let primary = Color("PrimaryColor")
         
         /// Cor secundária
-        static let secondary = Color(red: 0.65, green: 0.50, blue: 0.40)
+        static let secondary = Color("SecondaryColor")
         
-        /// Cor de fundo principal
-        static let background = Color(.systemBackground)
+        /// Cor de fundo principal (marrom muito claro)
+        static let background = Color("BackgroundColor")
         
-        /// Cor de fundo secundária
-        static let secondaryBackground = Color(.secondarySystemBackground)
+        /// Cor de fundo secundária (marrom claro)
+        static let secondaryBackground = Color("SecondaryBackgroundColor")
         
         /// Cor de texto primária
-        static let textPrimary = Color(.label)
+        static let textPrimary = Color("TextPrimaryColor")
         
         /// Cor de texto secundária
-        static let textSecondary = Color(.secondaryLabel)
+        static let textSecondary = Color("TextSecondaryColor")
         
         /// Cor de destaque
-        static let accent = Color(red: 0.70, green: 0.55, blue: 0.45)
+        static let accent = Color("AccentColor")
+        
+        /// Cor de fundo do splash screen (marrom mais carregado)
+        static let splashBackground = Color("SplashBackgroundColor")
     }
     
     /// Espaçamentos padronizados
@@ -95,7 +98,7 @@ extension View {
         self
             .background(DesignSystem.Colors.secondaryBackground)
             .cornerRadius(DesignSystem.CornerRadius.medium)
-            .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
+            .shadow(color: DesignSystem.Colors.textPrimary.opacity(0.1), radius: 4, x: 0, y: 2)
     }
     
     /// Aplica estilo de botão primário

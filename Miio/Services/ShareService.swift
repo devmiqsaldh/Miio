@@ -5,21 +5,14 @@
 //  Created by Miqueias Saldanha on 04/12/25.
 //
 
-import UIKit
 import SwiftUI
 
-/// Serviço responsável por compartilhar entradas em redes sociais
-class ShareService {
-    /// Compartilha uma entrada do diário
-    /// - Parameters:
-    ///   - entry: Entrada a ser compartilhada
-    ///   - images: Imagens associadas
-    ///   - sourceView: View de origem para apresentar o sheet (iPad)
-    /// - Returns: UIActivityViewController configurado
-    func shareEntry(_ entry: Entry, images: [UIImage], sourceView: UIView? = nil) -> UIActivityViewController {
-        var items: [Any] = []
-        
-        // Texto da entrada
+/// Serviço responsável por preparar conteúdo para compartilhamento usando SwiftUI
+struct ShareService {
+    /// Prepara o texto de compartilhamento de uma entrada
+    /// - Parameter entry: Entrada a ser compartilhada
+    /// - Returns: Texto formatado para compartilhamento
+    static func prepareShareText(for entry: Entry) -> String {
         var shareText = entry.title.isEmpty ? "Entrada do Diário" : entry.title
         shareText += "\n\n\(entry.content)"
         
@@ -31,72 +24,23 @@ class ShareService {
             shareText += "\n\nTags: \(entry.tags.joined(separator: ", "))"
         }
         
-        items.append(shareText)
+        return shareText
+    }
+    
+    /// Prepara os URLs das fotos para compartilhamento
+    /// - Parameters:
+    ///   - entry: Entrada a ser compartilhada
+    ///   - store: Store para acessar as fotos
+    /// - Returns: Array de URLs das fotos
+    static func prepareShareItems(for entry: Entry, store: EntryStore) -> [URL] {
+        var items: [URL] = []
         
-        // Imagens
-        items.append(contentsOf: images)
-        
-        let activityVC = UIActivityViewController(
-            activityItems: items,
-            applicationActivities: nil
-        )
-        
-        // Configurações para iPad
-        if let popover = activityVC.popoverPresentationController, let sourceView = sourceView {
-            popover.sourceView = sourceView
-            popover.sourceRect = sourceView.bounds
+        // Adiciona URLs das imagens
+        for photo in entry.photos {
+            let fileURL = store.photosDirectory.appendingPathComponent(photo.fileName)
+            items.append(fileURL)
         }
         
-        // Exclui atividades não desejadas
-        activityVC.excludedActivityTypes = [
-            .assignToContact,
-            .addToReadingList
-        ]
-        
-        return activityVC
-    }
-    
-    /// Compartilha texto simples
-    /// - Parameter text: Texto a ser compartilhado
-    /// - Returns: UIActivityViewController configurado
-    func shareText(_ text: String) -> UIActivityViewController {
-        let activityVC = UIActivityViewController(
-            activityItems: [text],
-            applicationActivities: nil
-        )
-        return activityVC
-    }
-    
-    /// Compartilha imagens
-    /// - Parameter images: Imagens a serem compartilhadas
-    /// - Returns: UIActivityViewController configurado
-    func shareImages(_ images: [UIImage]) -> UIActivityViewController {
-        let activityVC = UIActivityViewController(
-            activityItems: images,
-            applicationActivities: nil
-        )
-        return activityVC
+        return items
     }
 }
-
-/// Wrapper SwiftUI para apresentar o share sheet
-struct ShareSheet: UIViewControllerRepresentable {
-    let activityItems: [Any]
-    let applicationActivities: [UIActivity]?
-    
-    init(activityItems: [Any], applicationActivities: [UIActivity]? = nil) {
-        self.activityItems = activityItems
-        self.applicationActivities = applicationActivities
-    }
-    
-    func makeUIViewController(context: Context) -> UIActivityViewController {
-        let controller = UIActivityViewController(
-            activityItems: activityItems,
-            applicationActivities: applicationActivities
-        )
-        return controller
-    }
-    
-    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
-}
-

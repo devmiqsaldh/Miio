@@ -7,15 +7,22 @@
 
 import SwiftUI
 
+// UIImage necessário apenas para carregar imagens do disco
+#if canImport(UIKit)
+import UIKit
+#endif
+
 /// View que exibe os detalhes completos de uma entrada
 struct EntryDetailView: View {
     let entry: Entry
     @ObservedObject var viewModel: EntryViewModel
     @Environment(\.dismiss) private var dismiss
     @State private var showingEditView = false
-    @State private var showingShareSheet = false
-    @State private var shareItems: [Any] = []
-    @State private var entryImages: [UIImage] = []
+    
+    /// Entrada atualizada do store
+    private var currentEntry: Entry {
+        viewModel.store.entries.first { $0.id == entry.id } ?? entry
+    }
     
     var body: some View {
         NavigationStack {
@@ -23,44 +30,44 @@ struct EntryDetailView: View {
                 VStack(alignment: .leading, spacing: DesignSystem.Spacing.lg) {
                     // Header
                     VStack(alignment: .leading, spacing: DesignSystem.Spacing.sm) {
-                        Text(entry.title.isEmpty ? "Sem título" : entry.title)
+                        Text(currentEntry.title.isEmpty ? "Sem título" : currentEntry.title)
                             .font(DesignSystem.Typography.largeTitle())
                             .foregroundColor(DesignSystem.Colors.textPrimary)
                         
-                        Text(entry.createdAt.formattedWithTime())
+                        Text(currentEntry.createdAt.formattedWithTime())
                             .font(DesignSystem.Typography.caption())
                             .foregroundColor(DesignSystem.Colors.textSecondary)
                     }
                     .padding(.horizontal, DesignSystem.Spacing.md)
                     
                     // Conteúdo
-                    if !entry.content.isEmpty {
-                        Text(entry.content)
+                    if !currentEntry.content.isEmpty {
+                        Text(currentEntry.content)
                             .font(DesignSystem.Typography.body())
                             .foregroundColor(DesignSystem.Colors.textPrimary)
                             .padding(.horizontal, DesignSystem.Spacing.md)
                     }
                     
                     // Localização
-                    if let location = entry.location {
+                    if let location = currentEntry.location {
                         LocationView(location: location)
                             .padding(.horizontal, DesignSystem.Spacing.md)
                     }
                     
                     // Fotos
-                    if !entry.photos.isEmpty {
-                        PhotosGridView(photos: entry.photos, store: viewModel.store)
+                    if !currentEntry.photos.isEmpty {
+                        PhotosGridView(photos: currentEntry.photos, store: viewModel.store)
                             .padding(.horizontal, DesignSystem.Spacing.md)
                     }
                     
                     // Tags
-                    if !entry.tags.isEmpty {
-                        TagsView(tags: entry.tags)
+                    if !currentEntry.tags.isEmpty {
+                        TagsView(tags: currentEntry.tags)
                             .padding(.horizontal, DesignSystem.Spacing.md)
                     }
                     
                     // Resumo (se disponível)
-                    if let summary = entry.summary, !summary.isEmpty {
+                    if let summary = currentEntry.summary, !summary.isEmpty {
                         VStack(alignment: .leading, spacing: DesignSystem.Spacing.sm) {
                             Text("Resumo")
                                 .font(DesignSystem.Typography.title3())
@@ -89,16 +96,24 @@ struct EntryDetailView: View {
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Menu {
-                        Button {
-                            loadImages()
-                            prepareShareItems()
-                            showingShareSheet = true
-                        } label: {
-                            Label("Compartilhar", systemImage: "square.and.arrow.up")
+                        if #available(iOS 16.0, *) {
+                            if let shareImageURL = generateShareImage() {
+                                ShareLink(item: shareImageURL, preview: SharePreview(currentEntry.title.isEmpty ? "Entrada do Diário" : currentEntry.title)) {
+                                    Label("Compartilhar", systemImage: "square.and.arrow.up")
+                                }
+                            } else {
+                                ShareLink(item: ShareService.prepareShareText(for: currentEntry)) {
+                                    Label("Compartilhar", systemImage: "square.and.arrow.up")
+                                }
+                            }
+                        } else {
+                            ShareLink(item: ShareService.prepareShareText(for: currentEntry)) {
+                                Label("Compartilhar", systemImage: "square.and.arrow.up")
+                            }
                         }
                         
                         Button {
-                            viewModel.loadEntry(entry)
+                            viewModel.loadEntry(currentEntry)
                             showingEditView = true
                         } label: {
                             Label("Editar", systemImage: "pencil")
@@ -106,11 +121,15 @@ struct EntryDetailView: View {
                         
                         Divider()
                         
-                        Button(role: .destructive) {
-                            viewModel.deleteEntry(entry)
+                        Button {
+                            viewModel.deleteEntry(currentEntry)
                             dismiss()
                         } label: {
-                            Label("Excluir", systemImage: "trash")
+                            HStack {
+                                Image(systemName: "trash")
+                                    .foregroundColor(DesignSystem.Colors.textPrimary)
+                                Text("Excluir")
+                            }
                         }
                     } label: {
                         Image(systemName: "ellipsis.circle")
@@ -120,213 +139,55 @@ struct EntryDetailView: View {
             .sheet(isPresented: $showingEditView) {
                 EntryEditView(viewModel: viewModel)
             }
-            .sheet(isPresented: $showingShareSheet) {
-                ShareSheet(activityItems: shareItems)
-            }
-            .onAppear {
-                loadImages()
+            .onChange(of: viewModel.store.entries) { _ in
+                // Força atualização quando as entradas mudam
             }
         }
     }
     
     // MARK: - Private Methods
     
-    private func loadImages() {
-        entryImages = entry.photos.compactMap { photo in
+    @available(iOS 16.0, *)
+    @MainActor
+    private func generateShareImage() -> URL? {
+        // Carrega imagens primeiro
+        var loadedImages: [UIImage] = []
+        for photo in currentEntry.photos {
             let fileURL = viewModel.store.photosDirectory.appendingPathComponent(photo.fileName)
-            guard let imageData = try? Data(contentsOf: fileURL),
-                  let image = UIImage(data: imageData) else {
-                return nil
+            if let imageData = try? Data(contentsOf: fileURL),
+               let image = UIImage(data: imageData) {
+                loadedImages.append(image)
             }
-            return image
-        }
-    }
-    
-    private func prepareShareItems() {
-        var shareText = entry.title.isEmpty ? "Entrada do Diário" : entry.title
-        shareText += "\n\n\(entry.content)"
-        
-        if let location = entry.location {
-            shareText += "\n\nLocalização: \(location.name)"
         }
         
-        if !entry.tags.isEmpty {
-            shareText += "\n\nTags: \(entry.tags.joined(separator: ", "))"
+        // Cria view com imagens já carregadas
+        let shareableView = ShareableEntryViewWithImages(entry: currentEntry, images: loadedImages)
+        
+        // Renderiza a imagem
+        #if canImport(UIKit)
+        let renderer = ImageRenderer(content: shareableView)
+        renderer.scale = 3.0 // Alta resolução
+        
+        guard let image = renderer.uiImage,
+              let imageData = image.pngData() else {
+            // Erro ao renderizar imagem para compartilhamento
+            return nil
         }
         
-        shareItems = [shareText] + entryImages
-    }
-}
-
-/// View que exibe informações de localização
-struct LocationView: View {
-    let location: Location
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.Spacing.sm) {
-            HStack {
-                Image(systemName: "location.fill")
-                    .foregroundColor(DesignSystem.Colors.accent)
-                Text("Localização")
-                    .font(DesignSystem.Typography.title3())
-                    .foregroundColor(DesignSystem.Colors.textPrimary)
-            }
-            
-            Text(location.name)
-                .font(DesignSystem.Typography.body())
-                .foregroundColor(DesignSystem.Colors.textPrimary)
-            
-            if let address = location.address {
-                Text(address)
-                    .font(DesignSystem.Typography.caption())
-                    .foregroundColor(DesignSystem.Colors.textSecondary)
-            }
-        }
-        .padding(DesignSystem.Spacing.md)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(DesignSystem.Colors.secondaryBackground)
-        .cornerRadius(DesignSystem.CornerRadius.medium)
-    }
-}
-
-/// View que exibe tags
-struct TagsView: View {
-    let tags: [String]
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.Spacing.sm) {
-            Text("Tags")
-                .font(DesignSystem.Typography.title3())
-                .foregroundColor(DesignSystem.Colors.textPrimary)
-            
-            FlowLayout(spacing: DesignSystem.Spacing.sm) {
-                ForEach(tags, id: \.self) { tag in
-                    Text("#\(tag)")
-                        .font(DesignSystem.Typography.caption())
-                        .padding(.horizontal, DesignSystem.Spacing.sm)
-                        .padding(.vertical, DesignSystem.Spacing.xs)
-                        .background(DesignSystem.Colors.secondaryBackground)
-                        .cornerRadius(DesignSystem.CornerRadius.small)
-                }
-            }
-        }
-    }
-}
-
-/// Layout que organiza views em um fluxo horizontal com quebra de linha
-struct FlowLayout: Layout {
-    var spacing: CGFloat = 8
-    
-    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
-        let result = FlowResult(
-            in: proposal.replacingUnspecifiedDimensions().width,
-            subviews: subviews,
-            spacing: spacing
-        )
-        return result.size
-    }
-    
-    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
-        let result = FlowResult(
-            in: bounds.width,
-            subviews: subviews,
-            spacing: spacing
-        )
-        for (index, subview) in subviews.enumerated() {
-            subview.place(at: CGPoint(x: bounds.minX + result.frames[index].minX,
-                                     y: bounds.minY + result.frames[index].minY),
-                         proposal: .unspecified)
-        }
-    }
-    
-    struct FlowResult {
-        var size: CGSize = .zero
-        var frames: [CGRect] = []
+        // Salva temporariamente no diretório de fotos
+        let fileName = "share_\(currentEntry.id.uuidString).png"
+        let fileURL = viewModel.store.photosDirectory.appendingPathComponent(fileName)
         
-        init(in maxWidth: CGFloat, subviews: Subviews, spacing: CGFloat) {
-            var currentX: CGFloat = 0
-            var currentY: CGFloat = 0
-            var lineHeight: CGFloat = 0
-            
-            for subview in subviews {
-                let size = subview.sizeThatFits(.unspecified)
-                
-                if currentX + size.width > maxWidth && currentX > 0 {
-                    currentX = 0
-                    currentY += lineHeight + spacing
-                    lineHeight = 0
-                }
-                
-                frames.append(CGRect(x: currentX, y: currentY, width: size.width, height: size.height))
-                lineHeight = max(lineHeight, size.height)
-                currentX += size.width + spacing
-            }
-            
-            self.size = CGSize(width: maxWidth, height: currentY + lineHeight)
+        do {
+            try imageData.write(to: fileURL)
+            return fileURL
+        } catch {
+            // Erro ao salvar imagem para compartilhamento
+            return nil
         }
-    }
-}
-
-/// View que exibe uma grade de fotos
-struct PhotosGridView: View {
-    let photos: [Photo]
-    let store: EntryStore
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.Spacing.sm) {
-            Text("Fotos")
-                .font(DesignSystem.Typography.title3())
-                .foregroundColor(DesignSystem.Colors.textPrimary)
-            
-            LazyVGrid(columns: [
-                GridItem(.flexible(), spacing: DesignSystem.Spacing.sm),
-                GridItem(.flexible(), spacing: DesignSystem.Spacing.sm)
-            ], spacing: DesignSystem.Spacing.sm) {
-                ForEach(photos) { photo in
-                    PhotoThumbnail(photo: photo, store: store)
-                }
-            }
-        }
-    }
-}
-
-/// Thumbnail de uma foto
-struct PhotoThumbnail: View {
-    let photo: Photo
-    let store: EntryStore
-    @State private var image: UIImage?
-    
-    var body: some View {
-        Group {
-            if let image = image {
-                Image(uiImage: image)
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .frame(height: 150)
-                    .clipped()
-                    .cornerRadius(DesignSystem.CornerRadius.medium)
-            } else {
-                Rectangle()
-                    .fill(DesignSystem.Colors.secondaryBackground)
-                    .frame(height: 150)
-                    .cornerRadius(DesignSystem.CornerRadius.medium)
-                    .overlay {
-                        ProgressView()
-                    }
-            }
-        }
-        .onAppear {
-            loadImage()
-        }
-    }
-    
-    private func loadImage() {
-        let fileURL = store.photosDirectory.appendingPathComponent(photo.fileName)
-        guard let imageData = try? Data(contentsOf: fileURL),
-              let loadedImage = UIImage(data: imageData) else {
-            return
-        }
-        image = loadedImage
+        #else
+        return nil
+        #endif
     }
 }
 
@@ -365,22 +226,5 @@ struct PhotoThumbnail: View {
     )
     
     return EntryDetailView(entry: sampleEntry, viewModel: viewModel)
-}
-
-#Preview("Location View") {
-    let location = Location(
-        name: "Parque Ibirapuera",
-        latitude: -23.5874,
-        longitude: -46.6576,
-        address: "Av. Pedro Álvares Cabral, São Paulo - SP"
-    )
-    
-    return LocationView(location: location)
-        .padding()
-}
-
-#Preview("Tags View") {
-    TagsView(tags: ["viagem", "férias", "praia", "diversão", "família"])
-        .padding()
 }
 

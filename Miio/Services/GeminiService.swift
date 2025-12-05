@@ -8,7 +8,6 @@
 import Foundation
 
 /// Serviço para interagir com a API do Gemini
-@MainActor
 class GeminiService {
     /// API Key do Gemini
     private let apiKey = "AIzaSyD5JedwQKxB4eDJk5jh07fwUX1YXO0_k_w"
@@ -73,7 +72,7 @@ class GeminiService {
                 return Array(tags.prefix(3))
             }
         } catch {
-            print("Erro ao chamar API do Gemini: \(error.localizedDescription)")
+            // Erro na chamada da API do Gemini é tratado silenciosamente
         }
         
         return []

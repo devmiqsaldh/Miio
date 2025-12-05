@@ -12,8 +12,6 @@ struct EntryListView: View {
     @StateObject private var viewModel: EntryViewModel
     @State private var showingNewEntry = false
     @State private var selectedEntry: Entry?
-    @State private var showingShareSheet = false
-    @State private var shareItems: [Any] = []
     
     init(store: EntryStore) {
         _viewModel = StateObject(wrappedValue: EntryViewModel(store: store))
@@ -31,7 +29,8 @@ struct EntryListView: View {
                     entriesList
                 }
             }
-            .navigationTitle("Meu Diário")
+            .background(DesignSystem.Colors.background)
+            .navigationTitle(viewModel.showingArchived ? "Arquivadas" : "Meu Diário")
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -45,22 +44,45 @@ struct EntryListView: View {
                 }
                 
                 ToolbarItem(placement: .navigationBarLeading) {
-                    if !viewModel.allTags.isEmpty {
-                        Menu {
+                    Menu {
+                        // Toggle para mostrar arquivados
+                        Button {
+                            withAnimation {
+                                viewModel.showingArchived.toggle()
+                                viewModel.selectedTag = nil
+                            }
+                        } label: {
+                            HStack {
+                                Text(viewModel.showingArchived ? "Mostrar Ativas" : "Mostrar Arquivadas")
+                                if viewModel.showingArchived {
+                                    Image(systemName: "checkmark")
+                                }
+                            }
+                        }
+                        
+                        if !viewModel.showingArchived && viewModel.archivedCount > 0 {
+                            Text("\(viewModel.archivedCount) arquivada\(viewModel.archivedCount > 1 ? "s" : "")")
+                                .font(.caption)
+                                .foregroundColor(DesignSystem.Colors.textSecondary)
+                        }
+                        
+                        if !viewModel.allTags.isEmpty && !viewModel.showingArchived {
+                            Divider()
+                            
                             Button("Todas as entradas") {
                                 viewModel.selectedTag = nil
                             }
                             
                             Divider()
                             
-                            ForEach(viewModel.allTags, id: \.self) { tag in
+                            ForEach(viewModel.allTags.filter { $0 != "arquivado" }, id: \.self) { tag in
                                 Button(tag) {
                                     viewModel.selectedTag = tag
                                 }
                             }
-                        } label: {
-                            Image(systemName: "tag.fill")
                         }
+                    } label: {
+                        Image(systemName: viewModel.showingArchived ? "archivebox.fill" : "tag.fill")
                     }
                 }
             }
@@ -71,9 +93,6 @@ struct EntryListView: View {
             .sheet(item: $selectedEntry) { entry in
                 EntryDetailView(entry: entry, viewModel: viewModel)
             }
-            .sheet(isPresented: $showingShareSheet) {
-                ShareSheet(activityItems: shareItems)
-            }
         }
     }
     
@@ -81,143 +100,96 @@ struct EntryListView: View {
     
     private var entriesList: some View {
         List {
-            ForEach(viewModel.filteredEntries.filter { !$0.tags.contains("arquivado") }) { entry in
+            ForEach(viewModel.filteredEntries) { entry in
                 EntryCard(entry: entry) {
                     selectedEntry = entry
                 }
                 .listRowSeparator(.hidden)
                 .listRowInsets(EdgeInsets(top: DesignSystem.Spacing.xs, leading: DesignSystem.Spacing.md, bottom: DesignSystem.Spacing.xs, trailing: DesignSystem.Spacing.md))
+                .listRowBackground(Color.clear)
                 .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                    Button(role: .destructive) {
-                        withAnimation {
-                            viewModel.deleteEntry(entry)
+                    if viewModel.showingArchived {
+                        // Se está mostrando arquivados, permite desarquivar
+                        Button {
+                            withAnimation {
+                                viewModel.unarchiveEntry(entry)
+                            }
+                        } label: {
+                            Image(systemName: "tray.and.arrow.up")
+                                .foregroundColor(DesignSystem.Colors.textPrimary)
                         }
-                    } label: {
-                        Label("Excluir", systemImage: "trash")
-                    }
-                    
-                    Button {
-                        // Arquivar entrada (marcar como arquivada)
-                        var archivedEntry = entry
-                        if !archivedEntry.tags.contains("arquivado") {
-                            archivedEntry.tags.append("arquivado")
-                            viewModel.store.updateEntry(archivedEntry)
+                        .tint(DesignSystem.Colors.secondaryBackground)
+                        
+                        Button {
+                            withAnimation {
+                                viewModel.deleteEntry(entry)
+                            }
+                        } label: {
+                            Image(systemName: "trash")
+                                .foregroundColor(DesignSystem.Colors.textPrimary)
                         }
-                    } label: {
-                        Label("Arquivar", systemImage: "archivebox")
+                        .tint(DesignSystem.Colors.secondaryBackground)
+                    } else {
+                        // Se está mostrando ativas, permite arquivar
+                        Button {
+                            withAnimation {
+                                viewModel.deleteEntry(entry)
+                            }
+                        } label: {
+                            Image(systemName: "trash")
+                                .foregroundColor(DesignSystem.Colors.textPrimary)
+                        }
+                        .tint(DesignSystem.Colors.secondaryBackground)
+                        
+                        Button {
+                            withAnimation {
+                                viewModel.archiveEntry(entry)
+                            }
+                        } label: {
+                            Image(systemName: "archivebox")
+                                .foregroundColor(DesignSystem.Colors.textPrimary)
+                        }
+                        .tint(DesignSystem.Colors.secondaryBackground)
                     }
-                    .tint(.blue)
                 }
             }
         }
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
+        .background(DesignSystem.Colors.background)
     }
     
     private var emptyStateView: some View {
         VStack(spacing: DesignSystem.Spacing.lg) {
-            Image(systemName: "book.closed")
+            Image(systemName: viewModel.showingArchived ? "archivebox" : "book.closed")
                 .font(.system(size: 60))
                 .foregroundColor(DesignSystem.Colors.textSecondary)
                 .animateAppearance(true)
             
-            Text("Nenhuma entrada ainda")
+            Text(viewModel.showingArchived ? "Nenhuma entrada arquivada" : "Nenhuma entrada ainda")
                 .font(DesignSystem.Typography.title2())
                 .foregroundColor(DesignSystem.Colors.textPrimary)
                 .animateAppearance(true)
             
-            Text("Toque no botão + para criar sua primeira entrada")
+            Text(viewModel.showingArchived ? "As entradas arquivadas aparecerão aqui" : "Toque no botão + para criar sua primeira entrada")
                 .font(DesignSystem.Typography.body())
                 .foregroundColor(DesignSystem.Colors.textSecondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, DesignSystem.Spacing.lg)
                 .animateAppearance(true)
             
-            Button {
-                viewModel.createNewEntry()
-                showingNewEntry = true
-            } label: {
-                Label("Nova Entrada", systemImage: "plus.circle.fill")
+            if !viewModel.showingArchived {
+                Button {
+                    viewModel.createNewEntry()
+                    showingNewEntry = true
+                } label: {
+                    Label("Nova Entrada", systemImage: "plus.circle.fill")
+                }
+                .primaryButtonStyle()
+                .animateAppearance(true)
             }
-            .primaryButtonStyle()
-            .animateAppearance(true)
         }
         .padding(DesignSystem.Spacing.xl)
-    }
-}
-
-/// Card que representa uma entrada na lista
-struct EntryCard: View {
-    let entry: Entry
-    let onTap: () -> Void
-    
-    var body: some View {
-        Button(action: onTap) {
-            VStack(alignment: .leading, spacing: DesignSystem.Spacing.sm) {
-                HStack {
-                    Text(entry.title.isEmpty ? "Sem título" : entry.title)
-                        .font(DesignSystem.Typography.title3())
-                        .foregroundColor(DesignSystem.Colors.textPrimary)
-                    
-                    Spacer()
-                    
-                    Text(entry.createdAt.formattedForDiary())
-                        .font(DesignSystem.Typography.caption())
-                        .foregroundColor(DesignSystem.Colors.textSecondary)
-                }
-                
-                if !entry.content.isEmpty {
-                    Text(entry.content)
-                        .font(DesignSystem.Typography.body())
-                        .foregroundColor(DesignSystem.Colors.textSecondary)
-                        .lineLimit(3)
-                }
-                
-                if let location = entry.location {
-                    HStack(spacing: DesignSystem.Spacing.xs) {
-                        Image(systemName: "location.fill")
-                            .font(.caption)
-                        Text(location.name)
-                            .font(DesignSystem.Typography.caption())
-                    }
-                    .foregroundColor(DesignSystem.Colors.accent)
-                }
-                
-                if !entry.photos.isEmpty {
-                    HStack(spacing: DesignSystem.Spacing.xs) {
-                        Image(systemName: "photo.fill")
-                            .font(.caption)
-                        Text("\(entry.photos.count) foto\(entry.photos.count > 1 ? "s" : "")")
-                            .font(DesignSystem.Typography.caption())
-                    }
-                    .foregroundColor(DesignSystem.Colors.secondary)
-                }
-                
-                if !entry.tags.isEmpty {
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: DesignSystem.Spacing.xs) {
-                            ForEach(entry.tags, id: \.self) { tag in
-                                Text("#\(tag)")
-                                    .font(DesignSystem.Typography.caption())
-                                    .padding(.horizontal, DesignSystem.Spacing.sm)
-                                    .padding(.vertical, DesignSystem.Spacing.xs)
-                                    .background(DesignSystem.Colors.secondaryBackground)
-                                    .cornerRadius(DesignSystem.CornerRadius.small)
-                            }
-                        }
-                    }
-                }
-            }
-            .padding(DesignSystem.Spacing.md)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .cardStyle()
-        }
-        .buttonStyle(PlainButtonStyle())
-        .onTapGesture {
-            withAnimation(.subtleSpring) {
-                onTap()
-            }
-        }
     }
 }
 
@@ -253,20 +225,5 @@ struct EntryCard: View {
     entries.forEach { store.addEntry($0) }
     
     return EntryListView(store: store)
-}
-
-#Preview("Entry Card") {
-    let entry = Entry(
-        title: "Título da Entrada",
-        content: "Este é um exemplo de conteúdo de uma entrada do diário. Pode conter várias linhas de texto para descrever o que aconteceu no dia.",
-        location: Location(name: "Localização Exemplo", latitude: 0, longitude: 0),
-        photos: [Photo(fileName: "photo.jpg")],
-        tags: ["tag1", "tag2", "tag3"]
-    )
-    
-    return EntryCard(entry: entry) {
-        print("Card tapped")
-    }
-    .padding()
 }
 

@@ -7,7 +7,6 @@
 
 import Foundation
 import CoreLocation
-import UIKit
 
 /// Modelo principal que representa uma entrada do diário
 struct Entry: Identifiable, Codable, Equatable {
