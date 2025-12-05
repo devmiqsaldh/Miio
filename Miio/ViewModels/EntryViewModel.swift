@@ -168,18 +168,12 @@ class EntryViewModel: ObservableObject {
     // MARK: - Foundation Models Methods
     
     /// Gera resumo da entrada atual
-    func generateSummary() async {
-        guard !content.isEmpty else { return }
+    func generateSummary() async -> String? {
+        guard !content.isEmpty else { return nil }
         isProcessingAI = true
         defer { isProcessingAI = false }
         
-        if let summary = await foundationService.summarizeEntry(content) {
-            // Atualiza a entrada atual com o resumo
-            if var entry = currentEntry {
-                entry.summary = summary
-                store.updateEntry(entry)
-            }
-        }
+        return await foundationService.summarizeEntry(content)
     }
     
     /// Gera tags automaticamente a partir do conteúdo usando Gemini
@@ -272,7 +266,7 @@ class EntryViewModel: ObservableObject {
     }
 }
 
-/// Gerenciador de localização simplificado
+/// Gerenciador de localização
 class LocationManager: NSObject, CLLocationManagerDelegate {
     private let manager = CLLocationManager()
     private var completion: ((CLLocation?) -> Void)?
@@ -288,31 +282,41 @@ class LocationManager: NSObject, CLLocationManagerDelegate {
     func requestLocation(completion: @escaping (CLLocation?) -> Void) {
         self.completion = completion
         
-        switch manager.authorizationStatus {
+        let status = manager.authorizationStatus
+        
+        switch status {
         case .notDetermined:
             manager.requestWhenInUseAuthorization()
         case .authorizedWhenInUse, .authorizedAlways:
             manager.requestLocation()
-        default:
+        case .denied, .restricted:
+            completion(nil)
+        @unknown default:
             completion(nil)
         }
     }
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        completion?(locations.first)
+        guard let location = locations.first else {
+            completion?(nil)
+            completion = nil
+            return
+        }
+        completion?(location)
         completion = nil
     }
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        print("Erro ao obter localização: \(error.localizedDescription)")
         completion?(nil)
         completion = nil
     }
     
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
-        if manager.authorizationStatus == .authorizedWhenInUse ||
-           manager.authorizationStatus == .authorizedAlways {
+        let status = manager.authorizationStatus
+        if status == .authorizedWhenInUse || status == .authorizedAlways {
             manager.requestLocation()
-        } else {
+        } else if status == .denied || status == .restricted {
             completion?(nil)
             completion = nil
         }

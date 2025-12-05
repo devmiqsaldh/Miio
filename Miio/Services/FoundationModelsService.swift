@@ -15,16 +15,16 @@ class FoundationModelsService {
     /// - Parameter content: Conteúdo a ser resumido
     /// - Returns: Resumo gerado ou nil em caso de erro
     func summarizeEntry(_ content: String) async -> String? {
-        // Nota: Em produção, isso usaria o framework Foundation Models da Apple
-        // Por enquanto, retorna um resumo simples baseado em heurísticas
+        guard !content.isEmpty else { return nil }
         
-        guard content.count > 100 else { return nil }
+        let sentences = content.components(separatedBy: CharacterSet(charactersIn: ".!?"))
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty }
         
-        let sentences = content.components(separatedBy: ". ")
-        guard sentences.count > 2 else { return nil }
+        guard sentences.count > 1 else { return nil }
         
-        // Retorna as primeiras 2-3 frases como resumo
-        let summarySentences = Array(sentences.prefix(3))
+        let summaryCount = min(3, sentences.count)
+        let summarySentences = Array(sentences.prefix(summaryCount))
         return summarySentences.joined(separator: ". ") + "."
     }
     
@@ -32,17 +32,21 @@ class FoundationModelsService {
     /// - Parameter content: Conteúdo a ser analisado
     /// - Returns: Array de entidades encontradas
     func extractEntities(from content: String) async -> [String] {
+        guard !content.isEmpty else { return [] }
+        
         var entities: [String] = []
         let tagger = NLTagger(tagSchemes: [.nameType])
         tagger.string = content
         
+        let options: NLTagger.Options = [.omitWhitespace, .omitPunctuation, .joinNames]
         let range = content.startIndex..<content.endIndex
-        tagger.enumerateTags(in: range, unit: .word, scheme: .nameType) { tag, tokenRange in
+        
+        tagger.enumerateTags(in: range, unit: .word, scheme: .nameType, options: options) { tag, tokenRange in
             if let tag = tag {
                 switch tag {
                 case .personalName, .placeName, .organizationName:
-                    let entity = String(content[tokenRange])
-                    if !entities.contains(entity) && entity.count > 2 {
+                    let entity = String(content[tokenRange]).trimmingCharacters(in: .whitespaces)
+                    if !entity.isEmpty && entity.count > 2 && !entities.contains(entity) {
                         entities.append(entity)
                     }
                 default:
@@ -116,100 +120,5 @@ class FoundationModelsService {
         return content
     }
     
-    /// Entende o texto respondendo perguntas sobre ele
-    /// - Parameters:
-    ///   - content: Conteúdo a ser analisado
-    ///   - question: Pergunta sobre o conteúdo
-    /// - Returns: Resposta baseada no conteúdo
-    func understandText(_ content: String, question: String) async -> String {
-        // Em produção, usaria Foundation Models para compreensão profunda
-        // Por enquanto, retorna análise básica baseada em palavras-chave
-        
-        let lowerContent = content.lowercased()
-        let lowerQuestion = question.lowercased()
-        
-        if lowerQuestion.contains("o que acontece") || lowerQuestion.contains("o que") {
-            let sentences = content.components(separatedBy: ". ")
-            if let firstSentence = sentences.first, firstSentence.count > 20 {
-                return firstSentence + "."
-            }
-        }
-        
-        if lowerQuestion.contains("quem") {
-            let entities = await extractEntities(from: content)
-            if let firstEntity = entities.first {
-                return "A pessoa mencionada é: \(firstEntity)"
-            }
-        }
-        
-        if lowerQuestion.contains("onde") {
-            let sentences = content.components(separatedBy: ". ")
-            for sentence in sentences {
-                if sentence.lowercased().contains("em ") || sentence.lowercased().contains("na ") || sentence.lowercased().contains("no ") {
-                    return sentence.trimmingCharacters(in: .whitespaces) + "."
-                }
-            }
-        }
-        
-        return "Com base no texto, a resposta está relacionada ao conteúdo mencionado."
-    }
-    
-    /// Compõe escrita criativa baseada em um prompt
-    /// - Parameter prompt: Prompt criativo (ex: "Gere uma pequena história de ninar sobre uma raposa")
-    /// - Returns: Texto criativo gerado
-    func composeCreativeWriting(prompt: String) async -> String {
-        // Em produção, usaria Foundation Models para geração criativa
-        // Por enquanto, retorna texto de exemplo baseado no prompt
-        
-        let lowerPrompt = prompt.lowercased()
-        
-        if lowerPrompt.contains("história") && lowerPrompt.contains("raposa") {
-            return """
-            Era uma vez uma raposa muito esperta que vivia em uma floresta encantada. 
-            Todas as noites, ela contava histórias para os outros animais antes de dormirem. 
-            Sua voz suave acalmava todos, e os animais adormeciam felizes, sonhando com aventuras mágicas.
-            """
-        }
-        
-        if lowerPrompt.contains("história") && lowerPrompt.contains("ninar") {
-            return """
-            Em um reino distante, havia um contador de histórias que todas as noites visitava 
-            as crianças para contar contos mágicos. Seus contos eram tão encantadores que 
-            as crianças adormeciam rapidamente, sonhando com mundos fantásticos.
-            """
-        }
-        
-        return "Esta é uma história criativa baseada no seu prompt: \(prompt)"
-    }
-    
-    /// Gera diálogo com uma voz específica
-    /// - Parameters:
-    ///   - prompt: Prompt do diálogo (ex: "Responda com a voz de um taberneiro amigável")
-    ///   - context: Contexto adicional
-    /// - Returns: Diálogo gerado
-    func generateDialogue(prompt: String, context: String? = nil) async -> String {
-        // Em produção, usaria Foundation Models para geração de diálogo
-        // Por enquanto, retorna diálogo de exemplo
-        
-        let lowerPrompt = prompt.lowercased()
-        
-        if lowerPrompt.contains("taberneiro") || lowerPrompt.contains("amigável") {
-            return """
-            "Bem-vindo, viajante! Entre, entre! Temos a melhor cerveja da região. 
-            Sente-se, conte-me sobre suas aventuras. Estou sempre disposto a ouvir 
-            uma boa história enquanto você descansa os pés."
-            """
-        }
-        
-        if lowerPrompt.contains("sábio") || lowerPrompt.contains("ancião") {
-            return """
-            "Ah, jovem aprendiz, você busca conhecimento. A sabedoria vem com o tempo, 
-            mas posso compartilhar o que aprendi em minhas longas jornadas. 
-            Escute com atenção, pois cada palavra carrega um ensinamento."
-            """
-        }
-        
-        return "Diálogo gerado baseado no prompt: \(prompt)"
-    }
 }
 

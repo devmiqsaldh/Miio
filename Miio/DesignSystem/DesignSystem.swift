@@ -11,11 +11,11 @@ import SwiftUI
 enum DesignSystem {
     /// Cores do sistema de design
     enum Colors {
-        /// Cor primária do aplicativo (amarelo/bege)
-        static let primary = Color(red: 0.96, green: 0.89, blue: 0.71)
+        /// Cor primária do aplicativo (marrom claro)
+        static let primary = Color(red: 0.75, green: 0.60, blue: 0.50)
         
         /// Cor secundária
-        static let secondary = Color(red: 0.85, green: 0.75, blue: 0.55)
+        static let secondary = Color(red: 0.65, green: 0.50, blue: 0.40)
         
         /// Cor de fundo principal
         static let background = Color(.systemBackground)
@@ -29,8 +29,8 @@ enum DesignSystem {
         /// Cor de texto secundária
         static let textSecondary = Color(.secondaryLabel)
         
-        /// Cor de destaque (amarelo mais escuro)
-        static let accent = Color(red: 0.90, green: 0.80, blue: 0.60)
+        /// Cor de destaque
+        static let accent = Color(red: 0.70, green: 0.55, blue: 0.45)
     }
     
     /// Espaçamentos padronizados

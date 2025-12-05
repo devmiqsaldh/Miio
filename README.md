@@ -9,7 +9,7 @@ Aplicativo de diário para iOS desenvolvido com SwiftUI usando arquitetura MVVM.
 - Registrar localização com GPS
 - Organizar com tags
 - Buscar entradas
-- Compartilhar em redes sociais (LinkedIn, Instagram, WhatsApp, etc.)
+- Compartilhar em redes sociais
 - Criar entradas via Siri
 - Resumo automático e geração de tags com IA
 
@@ -26,7 +26,6 @@ Miio/
 ├── AppIntents/     # Siri e Shortcuts
 ├── DesignSystem/   # Sistema de design
 ├── Extensions/     # Extensões Swift
-├── Widgets/        # Widgets
 └── Utilities/      # Utilitários
 ```
 
@@ -43,30 +42,29 @@ Miio/
 - UIKit - Compartilhamento
 - UniformTypeIdentifiers - Tipos de conteúdo
 - NaturalLanguage - Análise de texto e entidades
-- WidgetKit - Widgets para a tela inicial
 
-### Funcionalidades Obrigatórias Implementadas
+### Funcionalidades Implementadas
 
-#### 1. Extensions e Design System
+#### Extensions e Design System
 
-**Extensions criadas:**
+Extensions criadas:
 - Animation+Extensions.swift - Animações personalizadas
 - Date+Extensions.swift - Formatação de datas
 - String+Extensions.swift - Utilitários de string
 - ViewBuilder+Extensions.swift - Helpers para ViewBuilder
 
-**Design System:**
+Design System:
 - DesignSystem.swift - Cores, tipografia, espaçamentos e componentes reutilizáveis
 - Modificadores como .cardStyle(), .primaryButtonStyle()
 
-#### 2. ViewBuilder
+#### ViewBuilder
 
 Implementado em ViewBuilder+Extensions.swift:
 - Helpers para views condicionais
 - Construção declarativa de interfaces
 - Uso de @ViewBuilder em todo o projeto
 
-#### 3. App Intents
+#### App Intents
 
 Framework App Intents implementado:
 - CreateEntryIntent - Criar entradas via Siri
@@ -74,31 +72,28 @@ Framework App Intents implementado:
 - GetLastEntryIntent - Obter última entrada
 - Integração com Siri, Shortcuts e Spotlight
 
-#### 4. Animações e SPM
+#### Animações e SPM
 
-**Animações:**
+Animações:
 - Animações discretas, breves e sutis
 - Feedback visual em interações
 - Transições suaves entre telas
 - Animações de lista escalonadas
 - Implementado em Animation+Extensions.swift
 
-**SPM (Swift Package Manager):**
+SPM (Swift Package Manager):
 - Projeto configurado para usar SPM quando necessário
 
-#### 5. Foundation Models
+#### Foundation Models
 
 Framework Foundation Models implementado:
 - Resumir entradas - Gera resumos automáticos
-- Extrair entidades - Identifica pessoas e lugares (usando NSLinguisticTagger)
-- Gerar tags - Sugere tags automaticamente
+- Extrair entidades - Identifica pessoas e lugares usando NSLinguisticTagger
+- Gerar tags - Sugere tags automaticamente usando Gemini API
 - Classificar sentimento - Analisa tom do texto
 - Refinar texto - Transforma texto conforme instruções
-- Entender texto - Responde perguntas sobre o conteúdo
-- Compor escrita criativa - Gera histórias
-- Gerar diálogo - Cria diálogos com vozes específicas
 
-Implementado em FoundationModelsService.swift usando NaturalLanguage.
+Implementado em FoundationModelsService.swift usando NaturalLanguage e GeminiService.swift para geração de tags.
 
 ## Requisitos
 
@@ -128,9 +123,11 @@ Implementado em FoundationModelsService.swift usando NaturalLanguage.
 - EntryListView.swift - Lista de entradas
 - EntryDetailView.swift - Detalhes da entrada
 - EntryEditView.swift - Criar/editar entrada
+- SplashView.swift - Tela de splash
 
 ### Services
 - FoundationModelsService.swift - Serviço de IA
+- GeminiService.swift - Serviço de geração de tags com Gemini
 - ShareService.swift - Compartilhamento
 
 ### App Intents
@@ -146,9 +143,6 @@ Implementado em FoundationModelsService.swift usando NaturalLanguage.
 - String+Extensions.swift - Strings
 - ViewBuilder+Extensions.swift - ViewBuilder
 
-### Widgets
-- MiioWidget.swift - Widget para tela inicial
-
 ## Persistência
 
 - Entradas salvas em UserDefaults
@@ -157,11 +151,11 @@ Implementado em FoundationModelsService.swift usando NaturalLanguage.
 
 ## Privacidade
 
-Todos os dados são armazenados localmente. Nenhuma informação é enviada para servidores externos.
+Todos os dados são armazenados localmente. Nenhuma informação é enviada para servidores externos, exceto para geração de tags via Gemini API.
 
 ## Documentação
 
-Todo o código está documentado com comentários seguindo as convenções do Swift.
+Todo o código está documentado com comentários /// seguindo as convenções do Swift.
 
 ## Licença
 

@@ -165,7 +165,9 @@ struct EntryEditView: View {
                     Section {
                         Button {
                             Task {
-                                await viewModel.generateSummary()
+                                if let summary = await viewModel.generateSummary() {
+                                    viewModel.content = summary
+                                }
                             }
                         } label: {
                             HStack {
@@ -184,7 +186,9 @@ struct EntryEditView: View {
                             Task {
                                 let entities = await viewModel.extractEntities()
                                 if !entities.isEmpty {
-                                    viewModel.tags = (viewModel.tags.isEmpty ? "" : viewModel.tags + ", ") + entities.joined(separator: ", ")
+                                    let existingTags = viewModel.tags.isEmpty ? [] : viewModel.tags.split(separator: ",").map { $0.trimmed() }
+                                    let allTags = Array(Set(existingTags + entities))
+                                    viewModel.tags = allTags.joined(separator: ", ")
                                 }
                             }
                         } label: {
