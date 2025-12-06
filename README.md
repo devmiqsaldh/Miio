@@ -10,7 +10,7 @@ Aplicativo de diário para iOS desenvolvido com SwiftUI usando arquitetura MVVM.
 - Organizar com tags
 - Buscar entradas
 - Compartilhar em redes sociais
-- Criar entradas via Siri
+- Criar entradas via Siri("")
 - Resumo automático e geração de tags com IA
 
 ## Arquitetura
@@ -162,7 +162,7 @@ Todos os dados são armazenados localmente no dispositivo. Apenas a geração de
 
 ## Documentação
 
-Todo o código está documentado com comentários /// seguindo as convenções do Swift.
+Todo o código está documentado com comentários,  seguindo as convenções do Swift.
 
 ## Licença
 
