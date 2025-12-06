@@ -78,18 +78,18 @@ struct EntryCard: View {
 
 // MARK: - Previews
 
-#Preview("Entry Card") {
-    let entry = Entry(
-        title: "Título da Entrada",
-        content: "Este é um exemplo de conteúdo de uma entrada do diário. Pode conter várias linhas de texto para descrever o que aconteceu no dia.",
-        location: Location(name: "Localização Exemplo", latitude: 0, longitude: 0),
-        photos: [Photo(fileName: "photo.jpg")],
-        tags: ["tag1", "tag2", "tag3"]
-    )
-    
-    return EntryCard(entry: entry) {
-        // Preview apenas
-    }
-    .padding()
-}
+//#Preview("Entry Card") {
+//    let entry = Entry(
+//        title: "Título da Entrada",
+//        content: "Este é um exemplo de conteúdo de uma entrada do diário. Pode conter várias linhas de texto para descrever o que aconteceu no dia.",
+//        location: Location(name: "Localização Exemplo", latitude: 0, longitude: 0),
+//        photos: [Photo(fileName: "photo.jpg")],
+//        tags: ["tag1", "tag2", "tag3"]
+//    )
+//    
+//    return EntryCard(entry: entry) {
+//        // Preview apenas
+//    }
+//    .padding()
+//}
 

@@ -193,37 +193,37 @@ struct EntryListView: View {
     }
 }
 
-// MARK: - Previews
-
-#Preview("Lista Vazia") {
-    EntryListView(store: EntryStore())
-}
-
-#Preview("Lista com Entradas") {
-    let store = EntryStore()
-    
-    // Adiciona entradas de exemplo
-    let entries = [
-        Entry(
-            title: "Dia na Praia",
-            content: "Passei um dia incrível na praia com amigos. O sol estava perfeito e a água estava deliciosa.",
-            location: Location(name: "Praia de Copacabana", latitude: -22.9711, longitude: -43.1822),
-            tags: ["praia", "amigos", "verão"]
-        ),
-        Entry(
-            title: "Reflexão sobre a Vida",
-            content: "Hoje refleti sobre as coisas importantes da vida. A família, os amigos e os momentos simples são o que realmente importam.",
-            tags: ["reflexão", "pessoal"]
-        ),
-        Entry(
-            title: "Nova Receita Testada",
-            content: "Testei uma nova receita de bolo de chocolate hoje. Ficou delicioso! Vou fazer novamente no próximo fim de semana.",
-            tags: ["culinária", "receita"]
-        )
-    ]
-    
-    entries.forEach { store.addEntry($0) }
-    
-    return EntryListView(store: store)
-}
+// MARK: - Previews Descomente para visualizar
+//
+//#Preview("Lista Vazia") {
+//    EntryListView(store: EntryStore())
+//}
+//
+//#Preview("Lista com Entradas") {
+//    let store = EntryStore()
+//    
+//    // Adiciona entradas de exemplo
+//    let entries = [
+//        Entry(
+//            title: "Dia na Praia",
+//            content: "Passei um dia incrível na praia com amigos. O sol estava perfeito e a água estava deliciosa.",
+//            location: Location(name: "Praia de Copacabana", latitude: -22.9711, longitude: -43.1822),
+//            tags: ["praia", "amigos", "verão"]
+//        ),
+//        Entry(
+//            title: "Reflexão sobre a Vida",
+//            content: "Hoje refleti sobre as coisas importantes da vida. A família, os amigos e os momentos simples são o que realmente importam.",
+//            tags: ["reflexão", "pessoal"]
+//        ),
+//        Entry(
+//            title: "Nova Receita Testada",
+//            content: "Testei uma nova receita de bolo de chocolate hoje. Ficou delicioso! Vou fazer novamente no próximo fim de semana.",
+//            tags: ["culinária", "receita"]
+//        )
+//    ]
+//    
+//    entries.forEach { store.addEntry($0) }
+//    
+//    return EntryListView(store: store)
+//}
 

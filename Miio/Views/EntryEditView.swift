@@ -326,25 +326,25 @@ struct EntryEditView: View {
     }
 }
 
-// MARK: - Previews
+// MARK: - Previews Descomente para visualizar
 
-#Preview("Nova Entrada") {
-    let store = EntryStore()
-    let viewModel = EntryViewModel(store: store)
-    viewModel.createNewEntry()
-    
-    return EntryEditView(viewModel: viewModel)
-}
-
-#Preview("Editar Entrada") {
-    let store = EntryStore()
-    let viewModel = EntryViewModel(store: store)
-    let sampleEntry = Entry(
-        title: "Minha Entrada",
-        content: "Este é o conteúdo da minha entrada do diário.",
-        tags: ["pessoal", "reflexão"]
-    )
-    viewModel.loadEntry(sampleEntry)
-    
-    return EntryEditView(viewModel: viewModel)
-}
+//#Preview("Nova Entrada") {
+//    let store = EntryStore()
+//    let viewModel = EntryViewModel(store: store)
+//    viewModel.createNewEntry()
+//    
+//    return EntryEditView(viewModel: viewModel)
+//}
+//
+//#Preview("Editar Entrada") {
+//    let store = EntryStore()
+//    let viewModel = EntryViewModel(store: store)
+//    let sampleEntry = Entry(
+//        title: "Minha Entrada",
+//        content: "Este é o conteúdo da minha entrada do diário.",
+//        tags: ["pessoal", "reflexão"]
+//    )
+//    viewModel.loadEntry(sampleEntry)
+//    
+//    return EntryEditView(viewModel: viewModel)
+//}

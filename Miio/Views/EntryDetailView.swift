@@ -191,40 +191,40 @@ struct EntryDetailView: View {
     }
 }
 
-// MARK: - Previews
+// MARK: - Previews Descomente para visualizar
 
-#Preview("Entry Detail - Com Localização") {
-    let store = EntryStore()
-    let viewModel = EntryViewModel(store: store)
-    let sampleEntry = Entry(
-        title: "Dia Incrível na Praia",
-        content: "Hoje foi um dia maravilhoso! Passei a tarde na praia com amigos, tomamos sol e nadamos muito. O pôr do sol estava simplesmente espetacular.",
-        location: Location(
-            name: "Praia de Copacabana",
-            latitude: -22.9711,
-            longitude: -43.1822,
-            address: "Copacabana, Rio de Janeiro - RJ"
-        ),
-        photos: [],
-        tags: ["praia", "amigos", "verão"]
-    )
-    
-    return EntryDetailView(entry: sampleEntry, viewModel: viewModel)
-}
-
-#Preview("Entry Detail - Com Fotos") {
-    let store = EntryStore()
-    let viewModel = EntryViewModel(store: store)
-    let sampleEntry = Entry(
-        title: "Viagem para Paris",
-        content: "Finalmente realizei o sonho de visitar Paris! A Torre Eiffel é ainda mais impressionante pessoalmente. Comi croissants deliciosos e caminhei pelas ruas charmosas da cidade.",
-        photos: [
-            Photo(fileName: "photo1.jpg", caption: "Torre Eiffel"),
-            Photo(fileName: "photo2.jpg", caption: "Café da manhã")
-        ],
-        tags: ["viagem", "paris", "turismo"]
-    )
-    
-    return EntryDetailView(entry: sampleEntry, viewModel: viewModel)
-}
-
+//#Preview("Entry Detail - Com Localização") {
+//    let store = EntryStore()
+//    let viewModel = EntryViewModel(store: store)
+//    let sampleEntry = Entry(
+//        title: "Dia Incrível na Praia",
+//        content: "Hoje foi um dia maravilhoso! Passei a tarde na praia com amigos, tomamos sol e nadamos muito. O pôr do sol estava simplesmente espetacular.",
+//        location: Location(
+//            name: "Praia de Copacabana",
+//            latitude: -22.9711,
+//            longitude: -43.1822,
+//            address: "Copacabana, Rio de Janeiro - RJ"
+//        ),
+//        photos: [],
+//        tags: ["praia", "amigos", "verão"]
+//    )
+//    
+//    return EntryDetailView(entry: sampleEntry, viewModel: viewModel)
+//}
+//
+//#Preview("Entry Detail - Com Fotos") {
+//    let store = EntryStore()
+//    let viewModel = EntryViewModel(store: store)
+//    let sampleEntry = Entry(
+//        title: "Viagem para Paris",
+//        content: "Finalmente realizei o sonho de visitar Paris! A Torre Eiffel é ainda mais impressionante pessoalmente. Comi croissants deliciosos e caminhei pelas ruas charmosas da cidade.",
+//        photos: [
+//            Photo(fileName: "photo1.jpg", caption: "Torre Eiffel"),
+//            Photo(fileName: "photo2.jpg", caption: "Café da manhã")
+//        ],
+//        tags: ["viagem", "paris", "turismo"]
+//    )
+//    
+//    return EntryDetailView(entry: sampleEntry, viewModel: viewModel)
+//}
+//
